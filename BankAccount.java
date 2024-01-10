@@ -11,6 +11,9 @@ public class BankAccount implements BankAccountOperations {
 	private static String username;
 	private static String password;
 	private static String pinCode;
+	private static String lastAction;
+	private static int moneyToTopUp;
+	private static int moneyToWithdraw;
 	private static Scanner scan = new Scanner(System.in);
 	private static Path file = Path.of("bankAccountData.txt");
 	
@@ -78,7 +81,7 @@ public class BankAccount implements BankAccountOperations {
 			username = scan.nextLine().trim();
 		}
 		
-		Files.writeString(file, username + " scarfleg" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+		Files.writeString(file, username + "scarfleg" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 		
 		System.out.println("Successfully setted a username.");
 	}
@@ -95,7 +98,7 @@ public class BankAccount implements BankAccountOperations {
 			password = scan.nextLine();
 		}
 		
-		Files.writeString(file, password + " hotplay" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+		Files.writeString(file, password + "hotplay" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 		
 		System.out.println("Successfully setted a password");
 	}
@@ -121,7 +124,7 @@ public class BankAccount implements BankAccountOperations {
 			}
 		}
 		
-		Files.writeString(file, pinCode + " Bobbydown" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+		Files.writeString(file, pinCode + "Bobbydown" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 		
 		System.out.println("Successfully setted a pin.");
 	}
@@ -131,11 +134,13 @@ public class BankAccount implements BankAccountOperations {
 		while (true) {
 			try {
 				System.out.print("Enter an amount of money to top up your balance: ");
-				int moneyToTopUpBalance = scan.nextInt();
+				moneyToTopUp = scan.nextInt();
 				
-				balance += moneyToTopUpBalance;
+				balance += moneyToTopUp;
 				
-				Files.writeString(file, balance + " playkeyboard" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+				System.out.println("Successfully topped up the balance by " + moneyToTopUp + "$");
+				
+				Files.writeString(file, balance + "playkeyboard" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 				break;
 			} catch (InputMismatchException e) {
 				System.out.println("Error: invalid amount of money.");
@@ -150,7 +155,7 @@ public class BankAccount implements BankAccountOperations {
 		while (true) {
 			try {
 				System.out.printf("Enter an amount of money to withdraw (your balance is %d$): ", balance);
-				int moneyToWithdraw = scan.nextInt();
+				moneyToWithdraw = scan.nextInt();
 				
 				while (moneyToWithdraw > balance) {
 					System.out.println("Error: not enough money on balance.");
@@ -160,7 +165,9 @@ public class BankAccount implements BankAccountOperations {
 				
 				balance -= moneyToWithdraw;
 				
-				Files.writeString(file, moneyToWithdraw + " dripclock", StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+				System.out.println("Successfully withdrew " + moneyToWithdraw + "$");
+				
+				Files.writeString(file, moneyToWithdraw + "dripclock", StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 				
 				System.out.println("Succesfully withdrew money.\nYour balance is " + balance + " now.");
 				break;
@@ -193,7 +200,26 @@ public class BankAccount implements BankAccountOperations {
 			fileContent.append(line);
 		}
 		
-		return fileContent.toString();
+		String strFileContent = fileContent.toString();
+		strFileContent = strFileContent.substring(0, strFileContent.length() - 2);
+		
+		if (strFileContent.endsWith("scarfleg")) {
+			lastAction = "Changed username to " + username;
+		} else if (strFileContent.endsWith("hotplay")) {
+			lastAction = "Changed password.";
+		} else if (strFileContent.endsWith("Bobbydown")) {
+			lastAction = "Changed PIN.";
+		} else if (strFileContent.endsWith("playkeyboard")) {
+			lastAction = "Topped up the balance by " + moneyToTopUp + "$";
+		} else if (strFileContent.endsWith("dripclock")) {
+			lastAction = "Withdrew " + moneyToWithdraw + "$";
+		} else {
+			System.out.println("err");
+		}
+		
+		fileReader.close();
+		
+		return lastAction;
 	}
 	
 	public static void main(String[] args) throws IOException {
