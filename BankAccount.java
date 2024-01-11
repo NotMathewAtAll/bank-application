@@ -7,15 +7,18 @@ import java.nio.file.StandardOpenOption;
 import java.io.IOException;
 
 public class BankAccount implements BankAccountOperations {
-	private static int balance = 0;
 	private static String username;
 	private static String password;
-	private static String pinCode;
+	public static String pinCode;
 	private static String lastAction;
+	public static String strFileContent;
+	
+	public static int balance = 0;
 	private static int moneyToTopUp;
 	private static int moneyToWithdraw;
+	
 	private static Scanner scan = new Scanner(System.in);
-	private static Path file = Path.of("bankAccountData.txt");
+	public static Path file = Path.of("bankAccountData.txt");
 	
 	private static boolean checkIfPasswordIsStrong(String password) {
 		boolean lengthMoreThanEight = false;
@@ -81,7 +84,7 @@ public class BankAccount implements BankAccountOperations {
 			username = scan.nextLine().trim();
 		}
 		
-		Files.writeString(file, username + "scarfleg" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+		Files.writeString(file, username + " scarfleg" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 		
 		System.out.println("Successfully setted a username.");
 	}
@@ -98,9 +101,44 @@ public class BankAccount implements BankAccountOperations {
 			password = scan.nextLine();
 		}
 		
-		Files.writeString(file, password + "hotplay" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+		Files.writeString(file, password + " hotplay" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 		
 		System.out.println("Successfully setted a password");
+	}
+	
+	@Override
+	public void changePassword() throws IOException {
+		System.out.print("Enter old password: ");
+		String enteredPassword = scan.nextLine();
+		
+		while (enteredPassword != password) {
+			System.out.println("Error: wrong password");
+			System.out.print("Enter the old password: ");
+			enteredPassword = scan.nextLine();
+		}
+		
+		System.out.print("Enter new password: ");
+		password = scan.nextLine();
+		
+		while (!checkIfPasswordIsStrong(password)) {
+			System.out.println("Error: your password must contain at least 1 small latin letter, "
+					   + "1 capital latin letter, 1 number and 1 special symbol.");
+			System.out.print("Enter new password: ");
+			password = scan.nextLine();
+		}
+		
+		System.out.print("Repeat the new password: ");
+		enteredPassword = scan.nextLine();
+		
+		while (!enteredPassword.equals(password)) {
+			System.out.println("Error: password don't match.");
+			System.out.print("Write new password again: ");
+			enteredPassword = scan.nextLine();
+		}
+		
+		Files.writeString(file, password + " hotplay" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+		
+		System.out.println("Successfully changed a password");
 	}
 	
 	@Override
@@ -124,9 +162,51 @@ public class BankAccount implements BankAccountOperations {
 			}
 		}
 		
-		Files.writeString(file, pinCode + "Bobbydown" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+		Files.writeString(file, pinCode + " Bobbydown" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 		
-		System.out.println("Successfully setted a pin.");
+		System.out.println("Successfully setted a PIN.");
+	}
+	
+	@Override
+	public void changePin() throws IOException {
+		System.out.print("Enter old PIN code: ");
+		String enteredPin = scan.nextLine();
+		
+		while (!enteredPin.equals(pinCode)) {
+			System.out.println("Error: wrong PIN code.");
+			System.out.print("Enter old PIN code: ");
+			enteredPin = scan.nextLine();
+		}
+		
+		System.out.print("Enter new PIN: ");
+		pinCode = scan.nextLine();
+		
+		while (!(checkIfPinIsNotEasy(pinCode)) || pinCode.equals("1234") || pinCode.length() != 4 || !(checkIfPinIsNumeric(pinCode))) {
+			if (pinCode.length() != 4) {
+				System.out.println("Error: your new PIN is not a 4-digit number.");
+				System.out.print("Enter PIN code: ");
+				pinCode = scan.nextLine();
+			} else if (checkIfPinIsNumeric(pinCode)) {
+				System.out.println("Error: your PIN is too easy.");
+				System.out.print("Enter PIN code: ");
+				pinCode = scan.nextLine();
+			} else {
+				System.out.println("Error: your PIN contains invalid symbol.");
+				System.out.print("Enter PIN code: ");
+				pinCode = scan.nextLine();
+			}
+		}
+		
+		System.out.print("Write new PIN code again: ");
+		enteredPin = scan.nextLine();
+		
+		while (!pinCode.equals(enteredPin)) {
+			System.out.println("Error: PIN codes don't match.");
+		}
+		
+		Files.writeString(file, pinCode + " Bobbydown" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+		
+		System.out.println("Successfully changed a PIN code.");
 	}
 	
 	@Override
@@ -140,7 +220,7 @@ public class BankAccount implements BankAccountOperations {
 				
 				System.out.println("Successfully topped up the balance by " + moneyToTopUp + "$");
 				
-				Files.writeString(file, balance + "playkeyboard" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+				Files.writeString(file, balance + " playkeyboard" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 				break;
 			} catch (InputMismatchException e) {
 				System.out.println("Error: invalid amount of money.");
@@ -167,7 +247,7 @@ public class BankAccount implements BankAccountOperations {
 				
 				System.out.println("Successfully withdrew " + moneyToWithdraw + "$");
 				
-				Files.writeString(file, moneyToWithdraw + "dripclock", StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+				Files.writeString(file, moneyToWithdraw + " dripclock", StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 				
 				System.out.println("Succesfully withdrew money.\nYour balance is " + balance + " now.");
 				break;
@@ -200,8 +280,10 @@ public class BankAccount implements BankAccountOperations {
 			fileContent.append(line);
 		}
 		
-		String strFileContent = fileContent.toString();
-		strFileContent = strFileContent.substring(0, strFileContent.length() - 2);
+		strFileContent = fileContent.toString();
+		if (!strFileContent.isEmpty()) {
+			strFileContent = strFileContent.substring(0, strFileContent.length() - 2);
+		}
 		
 		if (strFileContent.endsWith("scarfleg")) {
 			lastAction = "Changed username to " + username;
@@ -213,8 +295,6 @@ public class BankAccount implements BankAccountOperations {
 			lastAction = "Topped up the balance by " + moneyToTopUp + "$";
 		} else if (strFileContent.endsWith("dripclock")) {
 			lastAction = "Withdrew " + moneyToWithdraw + "$";
-		} else {
-			System.out.println("err");
 		}
 		
 		fileReader.close();
@@ -222,9 +302,8 @@ public class BankAccount implements BankAccountOperations {
 		return lastAction;
 	}
 	
-	public static void main(String[] args) throws IOException {
-		BankAccount bankAccount = new BankAccount();
-		System.out.println(bankAccount.getLastAction());
+	public String toString() {
+		return "Balance: " + balance;
 	}
 }
 
@@ -233,5 +312,7 @@ public class BankAccount implements BankAccountOperations {
  * hotplay - password
  * Bobbydown - pin
  * playkeyboard - top up
+ * dripclock - withdraw
+ * keyboard - top up
  * dripclock - withdraw
  */ 
