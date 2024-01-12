@@ -49,13 +49,44 @@ public class Main {
 		
 		System.out.println("Hello, " + nickname + "!");
 		System.out.println(bankAccount.toString());
+		String option = scan.nextLine();
+		
+		while (true) {
+			switch (option) {
+			case ("1"):
+				System.out.println(bankAccount.getBalance());
+				break;
+			case ("2"):
+				bankAccount.topUpBalance();
+				break;
+			case ("3"):
+				bankAccount.withdrawMoney();
+				break;
+			case ("4"):
+				System.out.println(bankAccount.getLastAction());
+				break;
+			case ("5"):
+				System.out.println(bankAccount.getOperationsHistory());
+				break;
+			case ("6"):
+				System.out.println(bankAccount.getUsername());
+				break;
+			case ("7"):
+				bankAccount.setUsername();
+				break;
+			case ("8"):
+				bankAccount.changePassword();
+				break;	
+			case ("9"):
+				bankAccount.changePin();
+				break;
+			case ("0"):
+				bankAccount.deleteAccount();
+				break;
+			default:
+				System.out.println("Error: no such an option.");
+				option = scan.nextLine();
+			}
+		}
 	}
 }
-
-
-
-
-
-// TODO: чтоби ывыодила username релевантний
-// 		 чтобы били все функци котори есть BankAccountOperations
-//		 карочи чтоб всьо уже роботало а то уже долго делаю

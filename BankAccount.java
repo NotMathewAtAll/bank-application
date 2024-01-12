@@ -1,12 +1,18 @@
 import bankAccountInterfaces.BankAccountOperations;
+import java.util.Date;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.text.SimpleDateFormat;
 import java.io.IOException;
+import java.time.LocalTime;
 
 public class BankAccount implements BankAccountOperations {
+	private static Date currentDate = new Date();
+	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd"); 
+	private static String date = dateFormat.format(currentDate);
 	private static String username;
 	private static String password;
 	public static String pinCode;
@@ -19,6 +25,9 @@ public class BankAccount implements BankAccountOperations {
 	
 	private static Scanner scan = new Scanner(System.in);
 	public static Path file = Path.of("bankAccountData.txt");
+	public static Path operationsHistory = Path.of("operationsHistory.txt");
+	private static LocalTime time = LocalTime.now();
+	private static String strTime = String.valueOf(time);
 	
 	private static boolean checkIfPasswordIsStrong(String password) {
 		boolean lengthMoreThanEight = false;
@@ -50,6 +59,22 @@ public class BankAccount implements BankAccountOperations {
 		}
 		
 		return lengthMoreThanEight && containsSymbols && containsDigit && containsLowerCase && containsUpperCase;
+	}
+	
+	private static String showUsername() throws IOException {
+		String line = "";
+		Scanner fileReader = new Scanner(file);
+		
+		while (fileReader.hasNextLine()) {
+			line = fileReader.nextLine();
+		}
+		
+		fileReader.close();
+		
+		line = line.substring(0, line.length() - 9);
+		username = line;
+		
+		return username;
 	}
 	
 	private static boolean checkIfPinIsNotEasy(String pinCode) {
@@ -85,7 +110,8 @@ public class BankAccount implements BankAccountOperations {
 		}
 		
 		Files.writeString(file, username + " scarfleg" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-		
+		Files.writeString(operationsHistory, "Setted username " + username + " " + date + " " + strTime + "." + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+
 		System.out.println("Successfully setted a username.");
 	}
 	
@@ -102,7 +128,8 @@ public class BankAccount implements BankAccountOperations {
 		}
 		
 		Files.writeString(file, password + " hotplay" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-		
+		Files.writeString(operationsHistory, "Setted password " + date + " " + strTime + "." + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+
 		System.out.println("Successfully setted a password");
 	}
 	
@@ -137,7 +164,8 @@ public class BankAccount implements BankAccountOperations {
 		}
 		
 		Files.writeString(file, password + " hotplay" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-		
+		Files.writeString(operationsHistory, "Changed password " + date + " " + strTime + "." + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+
 		System.out.println("Successfully changed a password");
 	}
 	
@@ -163,7 +191,8 @@ public class BankAccount implements BankAccountOperations {
 		}
 		
 		Files.writeString(file, pinCode + " Bobbydown" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-		
+		Files.writeString(operationsHistory, "Setted PIN. " + date + " " + strTime + "." + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+
 		System.out.println("Successfully setted a PIN.");
 	}
 	
@@ -205,6 +234,7 @@ public class BankAccount implements BankAccountOperations {
 		}
 		
 		Files.writeString(file, pinCode + " Bobbydown" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+		Files.writeString(operationsHistory, "Changed PIN." + date + " " + strTime + "." + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 		
 		System.out.println("Successfully changed a PIN code.");
 	}
@@ -221,6 +251,7 @@ public class BankAccount implements BankAccountOperations {
 				System.out.println("Successfully topped up the balance by " + moneyToTopUp + "$");
 				
 				Files.writeString(file, balance + " playkeyboard" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+				Files.writeString(operationsHistory, "Top upped balance by " + moneyToTopUp + "$ " + date + " " + strTime + "." + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 				break;
 			} catch (InputMismatchException e) {
 				System.out.println("Error: invalid amount of money.");
@@ -248,7 +279,8 @@ public class BankAccount implements BankAccountOperations {
 				System.out.println("Successfully withdrew " + moneyToWithdraw + "$");
 				
 				Files.writeString(file, moneyToWithdraw + " dripclock", StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-				
+				Files.writeString(operationsHistory, "Withdrew " + moneyToWithdraw + "$ " + date + " " + strTime + "." + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+
 				System.out.println("Succesfully withdrew money.\nYour balance is " + balance + " now.");
 				break;
 			} catch (InputMismatchException e) {
@@ -256,6 +288,67 @@ public class BankAccount implements BankAccountOperations {
 				scan.nextLine();
 				continue;
 			}
+		}
+	}
+	
+	public void deleteAccount() throws IOException {
+		BankAccount bankAccount = new BankAccount();
+		bankAccount.getLastAction();
+		
+		if (strFileContent.trim().isEmpty()) {
+			System.out.println("You don't have an account.");
+			System.out.print("Do you want to create new (y\\n)?: ");
+			String answer = scan.nextLine().trim().toLowerCase();
+			
+			while (true) {
+				if (answer.equals("y")) {
+					bankAccount.setUsername();
+					bankAccount.setPassword();
+					bankAccount.setPin();
+					break;
+				} else if (answer.equals("n")) {
+					break;
+				} else {
+					System.out.println("Error: no such an option.");
+					System.out.print("Do you want to create new (y\\n)?: ");
+					answer = scan.nextLine().trim().toLowerCase();
+				}
+			}
+		} else {
+			System.out.println("Are you sure you want to delete your account (you'll lose all the money on the account)?");
+			System.out.print("Confirm your password to delete: ");
+			
+			String enteredPassword = scan.nextLine().trim();
+			Scanner fileReader = new Scanner(file);
+			String line = "";
+					
+			while (fileReader.hasNextLine()) {
+				line = fileReader.nextLine();
+				
+				if (line.endsWith("hotplay")) {
+					break;
+				} else {
+					continue;
+				}
+			}
+	
+			fileReader.close();
+			
+			line = line.substring(0, line.length() - 8);
+			
+			password = line;
+	
+			while (!enteredPassword.equals(password)) {
+				System.out.println("Error: passwords don't match.");
+				System.out.println(password + " " + enteredPassword);
+				System.out.print("Confirm your password to delete: ");
+				enteredPassword = scan.nextLine();
+			}
+			
+			Files.write(file, new byte[0]);
+			Files.write(operationsHistory, new byte[0]);
+			
+			System.out.println("Account successfully deleted.");
 		}
 	}
 	
@@ -302,17 +395,29 @@ public class BankAccount implements BankAccountOperations {
 		return lastAction;
 	}
 	
+	@Override
+	public String getOperationsHistory() throws IOException {
+		StringBuilder fileContent = new StringBuilder();
+		Scanner fileReader = new Scanner(operationsHistory);
+		String line;
+
+		while (fileReader.hasNextLine()) {
+			line = fileReader.nextLine() + System.lineSeparator();
+			fileContent.append(line);
+		}
+		
+		fileReader.close();
+		
+		return fileContent.toString();
+	}
+	
 	public String toString() {
-		return "Balance: " + balance;
+		try {
+			showUsername();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return username + "\n" + "Balance: " + balance;
 	}
 }
-
-/*
- * scarfleg - username
- * hotplay - password
- * Bobbydown - pin
- * playkeyboard - top up
- * dripclock - withdraw
- * keyboard - top up
- * dripclock - withdraw
- */ 
