@@ -12,9 +12,8 @@ public interface BankAccountOperations {
 	void withdrawMoney() throws IOException;
 	void deleteAccount() throws IOException;
 	
-	int getBalance();
-	String getUsername();
-	String getLastAction() throws IOException;
+	String getBalance();
+	String getUsername() throws IOException;
 	String getOperationsHistory() throws IOException;
 }
 

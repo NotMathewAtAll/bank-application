@@ -6,14 +6,15 @@ public class Main {
 	
 	public static void main(String[] args) throws IOException {
 		BankAccount bankAccount = new BankAccount();
-		bankAccount.getLastAction();
+		bankAccount.getFileContent();
 		
-		if (BankAccount.strFileContent == null || BankAccount.strFileContent.equals("")) {
+		if (BankAccount.strFileContent.trim().equals("")) {
 			System.out.println("Hello! Let's get started by creating your bank account.");
 
 			bankAccount.setUsername();
 			bankAccount.setPassword();
 			bankAccount.setPin();
+			System.out.println("Account has been successfully created.");
 			System.exit(0);
 		}
 
@@ -23,16 +24,17 @@ public class Main {
 		String strPin = "";
 		
 		for (String line : lines) {
-			if (line.endsWith("Bobbydown")) {
-				strPin = line;
+			if (line.trim().endsWith("pincode")) {
+				strPin = line.trim();
+				break;
 			} else {
 				continue;
 			}
 		}
 		
-		strPin = strPin.substring(0, strPin.length() - 10);
-			
-		while (!strPin.equals(enteredPin)) {
+		strPin = strPin.substring(0, strPin.length() - 8);	
+		
+		while (!strPin.equals(enteredPin.trim())) {
 			System.out.println("Wrong PIN.");
 			System.out.print("Enter PIN code: ");
 			enteredPin = scan.nextLine();
@@ -55,34 +57,31 @@ public class Main {
 			switch (option) {
 			case ("1"):
 				System.out.println(bankAccount.getBalance());
-				break;
+				System.exit(0);
 			case ("2"):
 				bankAccount.topUpBalance();
-				break;
+				System.exit(0);
 			case ("3"):
 				bankAccount.withdrawMoney();
-				break;
+				System.exit(0);
 			case ("4"):
-				System.out.println(bankAccount.getLastAction());
-				break;
-			case ("5"):
 				System.out.println(bankAccount.getOperationsHistory());
-				break;
-			case ("6"):
+				System.exit(0);
+			case ("5"):
 				System.out.println(bankAccount.getUsername());
-				break;
-			case ("7"):
+				System.exit(0);
+			case ("6"):
 				bankAccount.setUsername();
-				break;
-			case ("8"):
+				System.exit(0);
+			case ("7"):
 				bankAccount.changePassword();
-				break;	
-			case ("9"):
+				System.exit(0);	
+			case ("8"):
 				bankAccount.changePin();
-				break;
-			case ("0"):
+				System.exit(0);
+			case ("9"):
 				bankAccount.deleteAccount();
-				break;
+				System.exit(0);
 			default:
 				System.out.println("Error: no such an option.");
 				option = scan.nextLine();
