@@ -1,11 +1,14 @@
 import bankAccountInterfaces.BankAccountOperations;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Scanner;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalTime;
 
@@ -25,6 +28,8 @@ public class BankAccount implements BankAccountOperations {
 	private static Scanner scan = new Scanner(System.in);
 	public static Path file = Path.of("bankAccountData.txt");
 	public static Path operationsHistory = Path.of("operationsHistory.txt");
+	private static File folder = new File("data");
+	private static File dataBase = new File(folder, "bankAccountData.txt");
 	private static LocalTime time = LocalTime.now();
 	private static String strTime = String.valueOf(time);
 	
@@ -46,6 +51,68 @@ public class BankAccount implements BankAccountOperations {
 		fileReader.close();
 		
 		return strFileContent;
+	}
+	
+	public static String getLastUsername() throws IOException {
+		Scanner fileReader = new Scanner(file);
+		List<String> lines = new ArrayList<>();
+		String line;
+		
+		while (fileReader.hasNextLine()) {
+			line = fileReader.nextLine();
+			
+			if (line.trim().endsWith("username")) {
+				lines.add(line);
+			} else { 
+				continue;
+			}
+		}
+		
+		fileReader.close();
+		username = lines.get(lines.size() - 1);
+		
+		return username;
+	}
+	
+	public static String getLastPassword() throws IOException {
+		Scanner fileReader = new Scanner(file);
+		List<String> lines = new ArrayList<>();
+		String line;
+		
+		while (fileReader.hasNextLine()) {
+			line = fileReader.nextLine();
+			
+			if (line.trim().endsWith("password")) {
+				lines.add(line);
+			} else { 
+				continue;
+			}
+		}
+		
+		fileReader.close();
+		password = lines.get(lines.size() - 1);
+		return password;
+	}
+	
+	public static String getLastPin() throws IOException {
+		Scanner fileReader = new Scanner(file);
+		List<String> lines = new ArrayList<>();
+		String line;
+		
+		while (fileReader.hasNextLine()) {
+			line = fileReader.nextLine();
+			
+			if (line.trim().endsWith("pincode")) {
+				lines.add(line);
+			} else { 
+				continue;
+			}
+		}
+		
+		fileReader.close();
+		pinCode = lines.get(lines.size() - 1);
+		
+		return pinCode;
 	}
 	
 	private static boolean checkIfPasswordIsStrong(String password) {
@@ -187,12 +254,14 @@ public class BankAccount implements BankAccountOperations {
 	
 	@Override
 	public void changePassword() throws IOException {
+		password = getLastPassword().substring(0, getLastPassword().length() - 9);
+		
 		System.out.print("Enter old password: ");
 		String enteredPassword = scan.nextLine();
-		
-		while (enteredPassword != password) {
+	
+		while (!enteredPassword.equals(password)) {
 			System.out.println("Error: wrong password");
-			System.out.print("Enter the old password: ");
+			System.out.print("Enter old password: ");
 			enteredPassword = scan.nextLine();
 		}
 		
@@ -218,7 +287,7 @@ public class BankAccount implements BankAccountOperations {
 		Files.writeString(file, password + " password" + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 		Files.writeString(operationsHistory, "Changed password " + date + " " + strTime + "." + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 
-		System.out.println("Successfully changed a password");
+		System.out.println("Successfully changed a password.");
 	}
 	
 	@Override
@@ -250,6 +319,8 @@ public class BankAccount implements BankAccountOperations {
 	
 	@Override
 	public void changePin() throws IOException {
+		pinCode = getLastPin().substring(0, BankAccount.getLastPin().length() - 8);
+		
 		System.out.print("Enter old PIN code: ");
 		String enteredPin = scan.nextLine();
 		
@@ -345,61 +416,22 @@ public class BankAccount implements BankAccountOperations {
 		BankAccount bankAccount = new BankAccount();
 		bankAccount.getFileContent();
 		
-		if (strFileContent.trim().isEmpty()) {
-			System.out.println("You don't have an account.");
-			System.out.print("Do you want to create new (y\\n)?: ");
-			String answer = scan.nextLine().trim().toLowerCase();
-			
-			while (true) {
-				if (answer.equals("y")) {
-					bankAccount.setUsername();
-					bankAccount.setPassword();
-					bankAccount.setPin();
-					break;
-				} else if (answer.equals("n")) {
-					break;
-				} else {
-					System.out.println("Error: no such an option.");
-					System.out.print("Do you want to create new (y\\n)?: ");
-					answer = scan.nextLine().trim().toLowerCase();
-				}
-			}
-		} else {
-			System.out.println("Are you sure you want to delete your account (you'll lose all the money on the account)?");
+		System.out.println("Are you sure you want to delete your account (you'll lose all the money on the account)?");
+		System.out.print("Confirm your password to delete: ");
+		
+		String enteredPassword = scan.nextLine().trim();
+		password = getLastPassword().substring(0, getLastPassword().length() - 9);		
+		
+		while (!enteredPassword.equals(password)) {
+			System.out.println("Error: passwords don't match.");
 			System.out.print("Confirm your password to delete: ");
-			
-			String enteredPassword = scan.nextLine().trim();
-			Scanner fileReader = new Scanner(file);
-			String line = "";
-					
-			while (fileReader.hasNextLine()) {
-				line = fileReader.nextLine();
-				
-				if (line.trim().endsWith("password")) {
-					break;
-				} else {
-					continue;
-				}
-			}
-	
-			fileReader.close();
-			
-			line = line.substring(0, line.length() - 9);
-			
-			password = line;
-	
-			while (!enteredPassword.equals(password)) {
-				System.out.println("Error: passwords don't match.");
-				System.out.println(password + " " + enteredPassword);
-				System.out.print("Confirm your password to delete: ");
-				enteredPassword = scan.nextLine();
-			}
-			
-			Files.write(file, new byte[0]);
-			Files.write(operationsHistory, new byte[0]);
-			
-			System.out.println("Account successfully deleted.");
+			enteredPassword = scan.nextLine();
 		}
+			
+		Files.write(file, new byte[0]);
+		Files.write(operationsHistory, new byte[0]);
+			
+		System.out.println("Account successfully deleted.");
 	}
 	
 	@Override
@@ -438,5 +470,14 @@ public class BankAccount implements BankAccountOperations {
 		}
 		
 		return "Balance: " + balance + "$";
+	}
+	
+	public static void main(String[] args) throws IOException {
+		if (!folder.exists()) {
+			folder.mkdirs();
+		}
+		
+		if (dataBase.createNewFile()) {
+		}
 	}
 }

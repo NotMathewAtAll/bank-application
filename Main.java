@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.Scanner;
 
 public class Main {
@@ -6,7 +7,13 @@ public class Main {
 	
 	public static void main(String[] args) throws IOException {
 		BankAccount bankAccount = new BankAccount();
-		bankAccount.getFileContent();
+		BankAccount.main(args);
+		try {
+			bankAccount.getFileContent();
+		} catch (AccessDeniedException e) {
+			System.out.println("Access to the file with all the data that this program creates is denied. Check your file permissions.");
+			System.exit(0);
+		}
 		
 		if (BankAccount.strFileContent.trim().equals("")) {
 			System.out.println("Hello! Let's get started by creating your bank account.");
@@ -17,37 +24,18 @@ public class Main {
 			System.out.println("Account has been successfully created.");
 			System.exit(0);
 		}
-
+		
 		System.out.print("Enter PIN code: ");
-		String[] lines = BankAccount.strFileContent.split("\n");
 		String enteredPin = scan.nextLine();
-		String strPin = "";
+		String pinCode = BankAccount.getLastPin().substring(0, BankAccount.getLastPin().length() - 8);
 		
-		for (String line : lines) {
-			if (line.trim().endsWith("pincode")) {
-				strPin = line.trim();
-				break;
-			} else {
-				continue;
-			}
-		}
-		
-		strPin = strPin.substring(0, strPin.length() - 8);	
-		
-		while (!strPin.equals(enteredPin.trim())) {
+		while (!pinCode.equals(enteredPin.trim())) {
 			System.out.println("Wrong PIN.");
 			System.out.print("Enter PIN code: ");
 			enteredPin = scan.nextLine();
 		}
 		
-		Scanner fileReader = new Scanner(BankAccount.file);
-		String nickname = "";
-		
-		nickname = fileReader.nextLine() + System.lineSeparator();
-		
-		fileReader.close();
-		
-		nickname = nickname.substring(0, nickname.length() - 11);
+		String nickname = BankAccount.getLastUsername().substring(0, BankAccount.getLastUsername().length() - 9);
 		
 		System.out.println("Hello, " + nickname + "!");
 		System.out.println(bankAccount.toString());
@@ -68,7 +56,7 @@ public class Main {
 				System.out.println(bankAccount.getOperationsHistory());
 				System.exit(0);
 			case ("5"):
-				System.out.println(bankAccount.getUsername());
+				System.out.println(BankAccount.getLastUsername().substring(0, BankAccount.getLastUsername().length() - 9));
 				System.exit(0);
 			case ("6"):
 				bankAccount.setUsername();
